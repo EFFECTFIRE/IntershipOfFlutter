@@ -1,4 +1,8 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
+import 'generated/l10n.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'themes.dart';
 
 void main() {
   runApp(
@@ -15,9 +19,23 @@ class FriendlyChatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "FriendlyChat",
-      home: ChatScreen(),
+    return AdaptiveTheme(
+      light: themeLight,
+      dark: themeDark,
+      initial: AdaptiveThemeMode.light,
+      builder: (theme, darkTheme) => MaterialApp(
+        localizationsDelegates: [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        title: "FriendlyChat",
+        home: ChatScreen(),
+        theme: theme,
+        darkTheme: darkTheme,
+      ),
     );
   }
 }
@@ -72,39 +90,40 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   bool _isComposing = false;
 
   Widget build(BuildContext context) {
-    return Theme(
-      data: ThemeData.dark(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("FriendlyChat"),
-          leading: IconButton(
-            icon: Icon(Icons.dark_mode),
-            onPressed: () => {},
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(S.of(context).app_bar_title),
+        leading: IconButton(
+          icon: Icon(Icons.dark_mode),
+          onPressed: () => {
+            AdaptiveTheme.of(context).mode.isDark
+                ? AdaptiveTheme.of(context).setLight()
+                : AdaptiveTheme.of(context).setDark()
+          },
         ),
-        body: Theme(
-          data: Theme.of(context),
-          child: Column(
-            children: [
-              Flexible(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(8.0),
-                  reverse: true,
-                  itemBuilder: (_, index) => _messages[index],
-                  itemCount: _messages.length,
-                ),
+      ),
+      body: Theme(
+        data: Theme.of(context),
+        child: Column(
+          children: [
+            Flexible(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(8.0),
+                reverse: true,
+                itemBuilder: (_, index) => _messages[index],
+                itemCount: _messages.length,
               ),
-              const Divider(
-                height: 1.0,
+            ),
+            const Divider(
+              height: 1.0,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                ),
-                child: _buildTextComposer(),
-              ),
-            ],
-          ),
+              child: _buildTextComposer(),
+            ),
+          ],
         ),
       ),
     );
@@ -126,8 +145,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   });
                 },
                 onSubmitted: _isComposing ? _handleSubmitted : null,
-                decoration:
-                    const InputDecoration.collapsed(hintText: "Send a message"),
+                decoration: InputDecoration.collapsed(
+                    hintText: S.of(context).place_holder),
                 focusNode: _focusNode,
               ),
             ),
@@ -135,6 +154,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               margin: const EdgeInsets.symmetric(horizontal: 4.0),
               child: IconButton(
                 icon: const Icon(Icons.send),
+                color: Theme.of(context).primaryColor,
                 onPressed: _isComposing
                     ? () => _handleSubmitted(_textController.text)
                     : null,
