@@ -23,6 +23,15 @@ class MessageLookup extends MessageLookupByLibrary {
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "app_bar_title": MessageLookupByLibrary.simpleMessage("FriendlyChat"),
-        "place_holder": MessageLookupByLibrary.simpleMessage("Send a message")
+        "auth_screen_title":
+            MessageLookupByLibrary.simpleMessage("Please, Sign In"),
+        "email_place_holder": MessageLookupByLibrary.simpleMessage("email"),
+        "message_place_holder":
+            MessageLookupByLibrary.simpleMessage("Send a message"),
+        "none": MessageLookupByLibrary.simpleMessage("NONE"),
+        "password_place_holder":
+            MessageLookupByLibrary.simpleMessage("password"),
+        "sign_in_button": MessageLookupByLibrary.simpleMessage("Sign In"),
+        "sign_out_button": MessageLookupByLibrary.simpleMessage("Sign Out")
       };
 }

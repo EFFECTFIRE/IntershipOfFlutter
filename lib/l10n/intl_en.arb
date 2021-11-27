@@ -1,4 +1,10 @@
 {
     "app_bar_title":"FriendlyChat",
-    "place_holder":"Send a message"
+    "message_place_holder":"Send a message",
+    "none":"NONE",
+    "auth_screen_title": "Please, Sign In",
+    "email_place_holder":"email",
+    "password_place_holder":"password",
+    "sign_in_button":"Sign In",
+    "sign_out_button":"Sign Out"
 }

@@ -61,10 +61,70 @@ class S {
   }
 
   /// `Send a message`
-  String get place_holder {
+  String get message_place_holder {
     return Intl.message(
       'Send a message',
-      name: 'place_holder',
+      name: 'message_place_holder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `NONE`
+  String get none {
+    return Intl.message(
+      'NONE',
+      name: 'none',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please, Sign In`
+  String get auth_screen_title {
+    return Intl.message(
+      'Please, Sign In',
+      name: 'auth_screen_title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `email`
+  String get email_place_holder {
+    return Intl.message(
+      'email',
+      name: 'email_place_holder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `password`
+  String get password_place_holder {
+    return Intl.message(
+      'password',
+      name: 'password_place_holder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign In`
+  String get sign_in_button {
+    return Intl.message(
+      'Sign In',
+      name: 'sign_in_button',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign Out`
+  String get sign_out_button {
+    return Intl.message(
+      'Sign Out',
+      name: 'sign_out_button',
       desc: '',
       args: [],
     );
