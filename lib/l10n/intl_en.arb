@@ -6,5 +6,6 @@
     "email_place_holder":"email",
     "password_place_holder":"password",
     "sign_in_button":"Sign In",
-    "sign_out_button":"Sign Out"
+    "sign_out_button":"Sign Out",
+    "sign_up_button":"Sign Up"
 }

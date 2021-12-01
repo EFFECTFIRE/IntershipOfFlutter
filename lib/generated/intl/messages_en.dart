@@ -32,6 +32,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "password_place_holder":
             MessageLookupByLibrary.simpleMessage("password"),
         "sign_in_button": MessageLookupByLibrary.simpleMessage("Sign In"),
-        "sign_out_button": MessageLookupByLibrary.simpleMessage("Sign Out")
+        "sign_out_button": MessageLookupByLibrary.simpleMessage("Sign Out"),
+        "sign_up_button": MessageLookupByLibrary.simpleMessage("Sign Up")
       };
 }

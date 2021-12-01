@@ -12,6 +12,55 @@ void main() {
   );
 }
 
+class SignUpScreen extends StatefulWidget {
+  _SignUpScreenState createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  final _emailCreateController = TextEditingController();
+  final _passwordCreateController = TextEditingController();
+  Future<void> signUp(String email, String password) async {
+    await Firebase.initializeApp();
+    try {
+      await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      Navigator.pop(context);
+      print("HOLLY SHIT, I'M INCREDIBLE!");
+    } on FirebaseAuthException catch (e) {
+      //print(e.code.toString());
+    }
+  }
+
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: _emailCreateController,
+              textAlign: TextAlign.center,
+              decoration:
+                  InputDecoration(hintText: S.of(context).email_place_holder),
+            ),
+            TextField(
+              controller: _passwordCreateController,
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                  hintText: S.of(context).password_place_holder),
+            ),
+            MaterialButton(
+              child: Text(S.of(context).sign_up_button),
+              onPressed: () async => await signUp(
+                  _emailCreateController.text, _passwordCreateController.text),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class AuthScreen extends StatefulWidget {
   _AuthScreenState createState() => _AuthScreenState();
 }
@@ -19,16 +68,6 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _emailTextController = TextEditingController();
   final _passwordTextController = TextEditingController();
-  Future<void> signUp() async {
-    await Firebase.initializeApp();
-    try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: "AB@fuckingSlaves.com", password: "VGLASS");
-      print("HOLLY SHIT, I'M INCREDIBLE!");
-    } on FirebaseAuthException catch (e) {
-      //print(e.code.toString());
-    }
-  }
 
   Future<void> signIn(String email, String password) async {
     await Firebase.initializeApp();
@@ -57,34 +96,34 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        child: _buildAuthText(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              textAlign: TextAlign.center,
+              controller: _emailTextController,
+              onSubmitted: (name) => {name = _emailTextController.text},
+              decoration: InputDecoration.collapsed(
+                  hintText: S.of(context).email_place_holder),
+            ),
+            TextField(
+              textAlign: TextAlign.center,
+              controller: _passwordTextController,
+              decoration: InputDecoration.collapsed(
+                  hintText: S.of(context).password_place_holder),
+            ),
+            MaterialButton(
+              child: Text(S.of(context).sign_in_button),
+              onPressed: () async => await signIn(
+                  _emailTextController.text, _passwordTextController.text),
+            ),
+            MaterialButton(
+                child: Text(S.of(context).sign_up_button),
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => SignUpScreen()))),
+          ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildAuthText() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        TextField(
-          textAlign: TextAlign.center,
-          controller: _emailTextController,
-          onSubmitted: (name) => {name = _emailTextController.text},
-          decoration: InputDecoration.collapsed(
-              hintText: S.of(context).email_place_holder),
-        ),
-        TextField(
-          textAlign: TextAlign.center,
-          controller: _passwordTextController,
-          decoration: InputDecoration.collapsed(
-              hintText: S.of(context).password_place_holder),
-        ),
-        MaterialButton(
-          child: Text(S.of(context).sign_in_button),
-          onPressed: () async => await signIn(
-              _emailTextController.text, _passwordTextController.text),
-        ),
-      ],
     );
   }
 }
@@ -166,7 +205,7 @@ class ChatMessage extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name[0], style: Theme.of(context).textTheme.headline4),
+                Text(name, style: Theme.of(context).textTheme.headline4),
                 Container(
                   margin: const EdgeInsets.only(top: 5.0),
                   child: Text(text),
