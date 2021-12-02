@@ -110,10 +110,10 @@ class S {
     );
   }
 
-  /// `Sign In`
+  /// `LOGIN`
   String get sign_in_button {
     return Intl.message(
-      'Sign In',
+      'LOGIN',
       name: 'sign_in_button',
       desc: '',
       args: [],
@@ -135,6 +135,16 @@ class S {
     return Intl.message(
       'Sign Up',
       name: 'sign_up_button',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `'@' not use`
+  String get email_validation_error {
+    return Intl.message(
+      '\'@\' not use',
+      name: 'email_validation_error',
       desc: '',
       args: [],
     );

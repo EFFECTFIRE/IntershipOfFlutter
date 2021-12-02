@@ -1,5 +1,6 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'themes.dart';
@@ -20,6 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailCreateController = TextEditingController();
   final _passwordCreateController = TextEditingController();
   Future<void> signUp(String email, String password) async {
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
     await Firebase.initializeApp();
     try {
       await FirebaseAuth.instance
@@ -68,60 +70,85 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _emailTextController = TextEditingController();
   final _passwordTextController = TextEditingController();
+  String _email = "";
+  String _password = "";
+  final _formkey = GlobalKey<FormState>();
 
   Future<void> signIn(String email, String password) async {
     await Firebase.initializeApp();
     try {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      print("OK,I'M IN");
+      //print("OK,I'M IN");
       Navigator.push(context,
-          MaterialPageRoute(builder: (context) => ChatScreen(name: email)));
+          MaterialPageRoute(builder: (context) => ChatScreen(name: _email)));
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case "user-not-found":
-          print("No user found");
           break;
         case "wrong-password":
           print("Wrong passord");
           break;
         default:
-          print(e.code.toString());
+          print("$_email $_password fuck");
           break;
       }
     }
+  }
+
+  void submit() {
+    SystemChannels.textInput.invokeMethod("TextInput.hide");
+    final form = _formkey.currentState;
+    form!.validate() ? form.save() : null;
+    signIn(_email, _password);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              textAlign: TextAlign.center,
-              controller: _emailTextController,
-              onSubmitted: (name) => {name = _emailTextController.text},
-              decoration: InputDecoration.collapsed(
-                  hintText: S.of(context).email_place_holder),
-            ),
-            TextField(
-              textAlign: TextAlign.center,
-              controller: _passwordTextController,
-              decoration: InputDecoration.collapsed(
-                  hintText: S.of(context).password_place_holder),
-            ),
-            MaterialButton(
-              child: Text(S.of(context).sign_in_button),
-              onPressed: () async => await signIn(
-                  _emailTextController.text, _passwordTextController.text),
-            ),
-            MaterialButton(
-                child: Text(S.of(context).sign_up_button),
-                onPressed: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SignUpScreen()))),
-          ],
+        child: Form(
+          key: _formkey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextFormField(
+                textAlign: TextAlign.center,
+                controller: _emailTextController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  hintText: S.of(context).email_place_holder,
+                  labelText: S.of(context).email_place_holder,
+                ),
+                onSaved: (val) => _email = val!,
+                validator: (val) {
+                  return !val!.contains("@")
+                      ? S.of(context).email_validation_error
+                      : null;
+                },
+              ),
+              TextFormField(
+                textAlign: TextAlign.center,
+                controller: _passwordTextController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: S.of(context).password_place_holder,
+                  labelText: S.of(context).password_place_holder,
+                ),
+                onSaved: (val) => _password = val!,
+              ),
+              MaterialButton(
+                child: Text(S.of(context).sign_in_button,
+                    style: Theme.of(context).textTheme.button),
+                onPressed: () => submit(),
+              ),
+              MaterialButton(
+                  child: Text(S.of(context).sign_up_button,
+                      style: Theme.of(context).textTheme.button),
+                  onPressed: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => SignUpScreen()))),
+            ],
+          ),
         ),
       ),
     );
@@ -202,15 +229,17 @@ class ChatMessage extends StatelessWidget {
               margin: const EdgeInsets.only(right: 16.0),
               child: CircleAvatar(child: Text(name[0])),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: Theme.of(context).textTheme.headline4),
-                Container(
-                  margin: const EdgeInsets.only(top: 5.0),
-                  child: Text(text),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name, style: Theme.of(context).textTheme.headline4),
+                  Container(
+                    margin: const EdgeInsets.only(top: 5.0),
+                    child: Text(text, maxLines: null),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -293,6 +322,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             Flexible(
               child: TextField(
                 controller: _textController,
+                maxLines: null,
                 onChanged: (text) {
                   setState(() {
                     _isComposing = text.isNotEmpty;

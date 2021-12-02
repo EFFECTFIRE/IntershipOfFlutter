@@ -5,7 +5,8 @@
     "auth_screen_title": "Please, Sign In",
     "email_place_holder":"email",
     "password_place_holder":"password",
-    "sign_in_button":"Sign In",
+    "sign_in_button":"LOGIN",
     "sign_out_button":"Sign Out",
-    "sign_up_button":"Sign Up"
+    "sign_up_button":"Sign Up",
+    "email_validation_error":"'@' not use"
 }

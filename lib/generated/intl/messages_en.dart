@@ -26,12 +26,14 @@ class MessageLookup extends MessageLookupByLibrary {
         "auth_screen_title":
             MessageLookupByLibrary.simpleMessage("Please, Sign In"),
         "email_place_holder": MessageLookupByLibrary.simpleMessage("email"),
+        "email_validation_error":
+            MessageLookupByLibrary.simpleMessage("\'@\' not use"),
         "message_place_holder":
             MessageLookupByLibrary.simpleMessage("Send a message"),
         "none": MessageLookupByLibrary.simpleMessage("NONE"),
         "password_place_holder":
             MessageLookupByLibrary.simpleMessage("password"),
-        "sign_in_button": MessageLookupByLibrary.simpleMessage("Sign In"),
+        "sign_in_button": MessageLookupByLibrary.simpleMessage("LOGIN"),
         "sign_out_button": MessageLookupByLibrary.simpleMessage("Sign Out"),
         "sign_up_button": MessageLookupByLibrary.simpleMessage("Sign Up")
       };
