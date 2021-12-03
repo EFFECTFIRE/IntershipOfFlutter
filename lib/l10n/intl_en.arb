@@ -12,5 +12,6 @@
     "error":"Error",
     "error_of_email":"This Email not exist",
     "error_of_password": "Wrong password",
-    "error_email_already_exist":"Email already exist" 
+    "error_email_already_exist":"Email already exist",
+    "listTile_title":"ListTileTitle"
 }

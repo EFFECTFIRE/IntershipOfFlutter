@@ -122,7 +122,7 @@ class _AuthScreenState extends State<AuthScreen> {
       //print("OK,I'M IN");
       if (FirebaseAuth.instance.currentUser != null) {
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => ChatScreen(name: _email)));
+            MaterialPageRoute(builder: (context) => ChatList(name: _email)));
       }
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -221,6 +221,93 @@ class _AuthScreenState extends State<AuthScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class ChatList extends StatefulWidget {
+  final String name;
+  const ChatList({required this.name, Key? key}) : super(key: key);
+  _ChatListState createState() => _ChatListState();
+}
+
+class _ChatListState extends State<ChatList> {
+  List<ChatScreen> _chats = [ChatScreen(name: "name")];
+  Future<void> signOut() async {
+    await Firebase.initializeApp();
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Theme(
+      data: Theme.of(context),
+      child: Scaffold(
+        appBar: AppBar(title: Text("CHAT"), actions: [
+          IconButton(
+              onPressed: () async => await signOut(),
+              icon: Icon(Icons.exit_to_app)),
+        ]),
+        drawer: Drawer(
+          child: ListView(
+            children: <Widget>[
+              DrawerHeader(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          child: Text(widget.name[0]),
+                        ),
+                        IconButton(
+                          onPressed: () => {
+                            AdaptiveTheme.of(context).mode.isDark
+                                ? AdaptiveTheme.of(context).setLight()
+                                : AdaptiveTheme.of(context).setDark()
+                          },
+                          icon: Icon(Icons.dark_mode),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Column(
+                          children: [
+                            Text("Fuck"),
+                            Text("FUCK"),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              ListTile(
+                title: Text(S.of(context).listTile_title),
+                onTap: () {},
+              ),
+            ],
+          ),
+        ),
+        body: Container(
+            child: ListView.builder(
+          itemCount: _chats.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              leading: CircleAvatar(
+                child: Text(_chats[index].name[0]),
+              ),
+              title: Text(_chats[index].name),
+              subtitle: Text("Last Message"),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => _chats[index])),
+            );
+          },
+        )),
       ),
     );
   }
@@ -330,31 +417,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   bool _isComposing = false;
-  Future<void> signOut() async {
-    await Firebase.initializeApp();
-    try {
-      await FirebaseAuth.instance.signOut();
-      Navigator.pop(context);
-    } on FirebaseAuthException catch (e) {}
-  }
 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          IconButton(
-              onPressed: () async => await signOut(),
-              icon: Icon(Icons.exit_to_app))
-        ],
-        title: Text(S.of(context).app_bar_title),
-        leading: IconButton(
-          icon: const Icon(Icons.dark_mode),
-          onPressed: () => {
-            AdaptiveTheme.of(context).mode.isDark
-                ? AdaptiveTheme.of(context).setLight()
-                : AdaptiveTheme.of(context).setDark()
-          },
-        ),
+        title: Text(widget.name),
       ),
       body: Theme(
         data: Theme.of(context),

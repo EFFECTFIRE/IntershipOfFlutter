@@ -35,6 +35,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("This Email not exist"),
         "error_of_password":
             MessageLookupByLibrary.simpleMessage("Wrong password"),
+        "listTile_title": MessageLookupByLibrary.simpleMessage("ListTileTitle"),
         "message_place_holder":
             MessageLookupByLibrary.simpleMessage("Send a message"),
         "none": MessageLookupByLibrary.simpleMessage("NONE"),

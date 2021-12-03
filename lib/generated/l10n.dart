@@ -189,6 +189,16 @@ class S {
       args: [],
     );
   }
+
+  /// `ListTileTitle`
+  String get listTile_title {
+    return Intl.message(
+      'ListTileTitle',
+      name: 'listTile_title',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
