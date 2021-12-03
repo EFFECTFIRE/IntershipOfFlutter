@@ -28,6 +28,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "email_place_holder": MessageLookupByLibrary.simpleMessage("email"),
         "email_validation_error":
             MessageLookupByLibrary.simpleMessage("\'@\' not use"),
+        "error": MessageLookupByLibrary.simpleMessage("Error"),
+        "error_email_already_exist":
+            MessageLookupByLibrary.simpleMessage("Email already exist"),
+        "error_of_email":
+            MessageLookupByLibrary.simpleMessage("This Email not exist"),
+        "error_of_password":
+            MessageLookupByLibrary.simpleMessage("Wrong password"),
         "message_place_holder":
             MessageLookupByLibrary.simpleMessage("Send a message"),
         "none": MessageLookupByLibrary.simpleMessage("NONE"),

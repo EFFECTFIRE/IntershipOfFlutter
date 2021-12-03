@@ -8,5 +8,9 @@
     "sign_in_button":"LOGIN",
     "sign_out_button":"Sign Out",
     "sign_up_button":"Sign Up",
-    "email_validation_error":"'@' not use"
+    "email_validation_error":"'@' not use",
+    "error":"Error",
+    "error_of_email":"This Email not exist",
+    "error_of_password": "Wrong password",
+    "error_email_already_exist":"Email already exist" 
 }

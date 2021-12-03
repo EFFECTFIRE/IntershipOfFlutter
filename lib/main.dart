@@ -20,6 +20,10 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final _emailCreateController = TextEditingController();
   final _passwordCreateController = TextEditingController();
+  String _email = '';
+  String _password = '';
+  final _formkey = GlobalKey<FormState>();
+
   Future<void> signUp(String email, String password) async {
     SystemChannels.textInput.invokeMethod('TextInput.hide');
     await Firebase.initializeApp();
@@ -29,34 +33,70 @@ class _SignUpScreenState extends State<SignUpScreen> {
       Navigator.pop(context);
       print("HOLLY SHIT, I'M INCREDIBLE!");
     } on FirebaseAuthException catch (e) {
-      //print(e.code.toString());
+      switch (e.code) {
+        case "email-already-in-use":
+          return showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                    title: Text(S.of(context).error),
+                    content: Text(S.of(context).error_email_already_exist),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text("OK"),
+                      )
+                    ]);
+              });
+        default:
+          print("FUCK!");
+          break;
+      }
     }
   }
 
+  void createAccount() {
+    SystemChannels.textInput.invokeMethod("TextInput.hide");
+    final form = _formkey.currentState;
+    form!.validate() ? form.save() : null;
+    signUp(_email, _password);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailCreateController,
-              textAlign: TextAlign.center,
-              decoration:
-                  InputDecoration(hintText: S.of(context).email_place_holder),
-            ),
-            TextField(
-              controller: _passwordCreateController,
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                  hintText: S.of(context).password_place_holder),
-            ),
-            MaterialButton(
-              child: Text(S.of(context).sign_up_button),
-              onPressed: () async => await signUp(
-                  _emailCreateController.text, _passwordCreateController.text),
-            ),
-          ],
+        child: Form(
+          key: _formkey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextFormField(
+                controller: _emailCreateController,
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.emailAddress,
+                onSaved: (val) => _email = val!,
+                validator: (val) {
+                  return !val!.contains("@")
+                      ? S.of(context).email_validation_error
+                      : null;
+                },
+                decoration: InputDecoration(
+                    labelText: S.of(context).email_place_holder),
+              ),
+              TextFormField(
+                controller: _passwordCreateController,
+                textAlign: TextAlign.center,
+                obscureText: true,
+                onSaved: (val) => _password = val!,
+                decoration: InputDecoration(
+                    labelText: S.of(context).password_place_holder),
+              ),
+              MaterialButton(
+                  child: Text(S.of(context).sign_up_button),
+                  onPressed: () => createAccount()),
+            ],
+          ),
         ),
       ),
     );
@@ -80,17 +120,48 @@ class _AuthScreenState extends State<AuthScreen> {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       //print("OK,I'M IN");
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => ChatScreen(name: _email)));
+      if (FirebaseAuth.instance.currentUser != null) {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => ChatScreen(name: _email)));
+      }
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case "user-not-found":
-          break;
+          return showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text(S.of(context).error),
+                  content: Text(S.of(context).error_of_email),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text("OK"),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              });
         case "wrong-password":
-          print("Wrong passord");
-          break;
+          return showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text(S.of(context).error),
+                  content: Text(S.of(context).error_of_password),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text("OK"),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              });
         default:
-          print("$_email $_password fuck");
+          print(e.code.hashCode);
           break;
       }
     }
@@ -264,7 +335,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     try {
       await FirebaseAuth.instance.signOut();
       Navigator.pop(context);
-    } catch (e) {}
+    } on FirebaseAuthException catch (e) {}
   }
 
   Widget build(BuildContext context) {

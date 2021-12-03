@@ -149,6 +149,46 @@ class S {
       args: [],
     );
   }
+
+  /// `Error`
+  String get error {
+    return Intl.message(
+      'Error',
+      name: 'error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This Email not exist`
+  String get error_of_email {
+    return Intl.message(
+      'This Email not exist',
+      name: 'error_of_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Wrong password`
+  String get error_of_password {
+    return Intl.message(
+      'Wrong password',
+      name: 'error_of_password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email already exist`
+  String get error_email_already_exist {
+    return Intl.message(
+      'Email already exist',
+      name: 'error_email_already_exist',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
