@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'themes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() {
   runApp(
@@ -20,18 +21,65 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final _emailCreateController = TextEditingController();
   final _passwordCreateController = TextEditingController();
+  final _userNameCreateController = TextEditingController();
+  final _phoneCreateController = TextEditingController();
+  CollectionReference users = FirebaseFirestore.instance.collection("users");
   String _email = '';
   String _password = '';
+  String _userName = '';
+  String _phone = '';
   final _formkey = GlobalKey<FormState>();
+  final _formkeyUser = GlobalKey<FormState>();
+  void addUser() {
+    final form = _formkeyUser.currentState;
+    if (form!.validate()) {
+      form.save();
+      users
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .set({'userName': _userName, 'phone': _phone});
+    }
+  }
 
   Future<void> signUp(String email, String password) async {
     SystemChannels.textInput.invokeMethod('TextInput.hide');
-    await Firebase.initializeApp();
     try {
       await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
-      Navigator.pop(context);
-      print("HOLLY SHIT, I'M INCREDIBLE!");
+      return showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+                title: Text("User data"),
+                content: Form(
+                    key: _formkeyUser,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _userNameCreateController,
+                          decoration: InputDecoration(labelText: "UserName"),
+                          onSaved: (val) => _userName = val!,
+                        ),
+                        TextFormField(
+                          controller: _phoneCreateController,
+                          decoration: InputDecoration(labelText: "Phone"),
+                          keyboardType: TextInputType.phone,
+                          onSaved: (val) => _phone = val!,
+                        )
+                      ],
+                    )),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        addUser();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ChatList()));
+                      },
+                      child: Text("OK"))
+                ],
+              ));
+      //Navigator.pop(context);
+      //print("HOLLY SHIT, I'M INCREDIBLE!");
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case "email-already-in-use":
@@ -115,14 +163,13 @@ class _AuthScreenState extends State<AuthScreen> {
   final _formkey = GlobalKey<FormState>();
 
   Future<void> signIn(String email, String password) async {
-    await Firebase.initializeApp();
     try {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       //print("OK,I'M IN");
       if (FirebaseAuth.instance.currentUser != null) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => ChatList(name: _email)));
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => ChatList()));
       }
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -161,7 +208,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 );
               });
         default:
-          print(e.code.hashCode);
+          print(e.code);
           break;
       }
     }
@@ -227,15 +274,15 @@ class _AuthScreenState extends State<AuthScreen> {
 }
 
 class ChatList extends StatefulWidget {
-  final String name;
-  const ChatList({required this.name, Key? key}) : super(key: key);
+  const ChatList({Key? key}) : super(key: key);
   _ChatListState createState() => _ChatListState();
 }
 
 class _ChatListState extends State<ChatList> {
-  List<ChatScreen> _chats = [ChatScreen(name: "name")];
+  final currentUser = FirebaseFirestore.instance
+      .collection("users")
+      .doc(FirebaseAuth.instance.currentUser!.uid);
   Future<void> signOut() async {
-    await Firebase.initializeApp();
     try {
       await FirebaseAuth.instance.signOut();
       Navigator.pop(context);
@@ -256,34 +303,40 @@ class _ChatListState extends State<ChatList> {
           child: ListView(
             children: <Widget>[
               DrawerHeader(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          child: Text(widget.name[0]),
-                        ),
-                        IconButton(
-                          onPressed: () => {
-                            AdaptiveTheme.of(context).mode.isDark
-                                ? AdaptiveTheme.of(context).setLight()
-                                : AdaptiveTheme.of(context).setDark()
-                          },
-                          icon: Icon(Icons.dark_mode),
-                        )
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Column(
-                          children: [
-                            Text("Fuck"),
-                            Text("FUCK"),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+                child: FutureBuilder<DocumentSnapshot>(
+                  future: currentUser.get(),
+                  builder:
+                      (context, AsyncSnapshot<DocumentSnapshot> snapshot) =>
+                          Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          CircleAvatar(
+                            child: Text(snapshot.data!.get("userName")[0]),
+                          ),
+                          IconButton(
+                            onPressed: () => {
+                              AdaptiveTheme.of(context).mode.isDark
+                                  ? AdaptiveTheme.of(context).setLight()
+                                  : AdaptiveTheme.of(context).setDark()
+                            },
+                            icon: Icon(Icons.dark_mode),
+                          )
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Column(
+                            children: [
+                              Text(snapshot.data!.get("userName")),
+                              Text(snapshot.data!.get("phone")),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               ListTile(
@@ -294,20 +347,34 @@ class _ChatListState extends State<ChatList> {
           ),
         ),
         body: Container(
-            child: ListView.builder(
-          itemCount: _chats.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              leading: CircleAvatar(
-                child: Text(_chats[index].name[0]),
-              ),
-              title: Text(_chats[index].name),
-              subtitle: Text("Last Message"),
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => _chats[index])),
-            );
-          },
-        )),
+          child: StreamBuilder(
+              stream:
+                  FirebaseFirestore.instance.collection("users").snapshots(),
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) return Text(S.of(context).none);
+                return ListView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                        leading: CircleAvatar(
+                          child: Text(
+                              snapshot.data!.docs[index].get("userName")[0]),
+                        ),
+                        title: Text(snapshot.data!.docs[index].get("userName")),
+                        subtitle: Text("Last Message"),
+                        onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ChatScreen(
+                                      name: snapshot.data!.docs[index]
+                                          .get("userName"),
+                                      user: FirebaseAuth
+                                          .instance.currentUser!.uid)),
+                            ));
+                  },
+                );
+              }),
+        ),
       ),
     );
   }
@@ -319,6 +386,7 @@ class FriendlyChatApp extends StatefulWidget {
 
 class _FriendlyChatAppState extends State<FriendlyChatApp> {
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -367,40 +435,36 @@ class ChatMessage extends StatelessWidget {
   const ChatMessage({
     required this.name,
     required this.text,
-    required this.animationController,
+    required this.date,
     Key? key,
   }) : super(key: key);
   final String text;
-  final AnimationController animationController;
   final String name;
+  final String date;
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity:
-          CurvedAnimation(parent: animationController, curve: Curves.bounceIn),
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(right: 16.0),
-              child: CircleAvatar(child: Text(name[0])),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(right: 16.0),
+            child: CircleAvatar(child: Text(name[0])),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: Theme.of(context).textTheme.headline4),
+                Container(
+                  margin: const EdgeInsets.only(top: 5.0),
+                  child: Text(text, maxLines: null),
+                ),
+              ],
             ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: Theme.of(context).textTheme.headline4),
-                  Container(
-                    margin: const EdgeInsets.only(top: 5.0),
-                    child: Text(text, maxLines: null),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -408,12 +472,13 @@ class ChatMessage extends StatelessWidget {
 
 class ChatScreen extends StatefulWidget {
   final String name;
-  const ChatScreen({required this.name, Key? key}) : super(key: key);
+  final String user;
+  ChatScreen({required this.name, required this.user, Key? key})
+      : super(key: key);
   _ChatScreenState createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
-  final List<ChatMessage> _messages = [];
   final _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   bool _isComposing = false;
@@ -428,11 +493,27 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         child: Column(
           children: [
             Flexible(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(8.0),
-                reverse: true,
-                itemBuilder: (_, index) => _messages[index],
-                itemCount: _messages.length,
+              child: StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('messages')
+                    .where("receiver", isEqualTo: widget.name)
+                    .snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData) return Text(S.of(context).none);
+                  return ListView.builder(
+                    reverse: true,
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      return Container(
+                          key: Key(snapshot.data!.docs[index].id),
+                          child: ChatMessage(
+                            date: snapshot.data!.docs[index].get('dataMessage'),
+                            text: snapshot.data!.docs[index].get('textMessage'),
+                            name: snapshot.data!.docs[index].get("receiver"),
+                          ));
+                    },
+                  );
+                },
               ),
             ),
             const Divider(
@@ -477,7 +558,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 icon: const Icon(Icons.send),
                 color: Theme.of(context).primaryColor,
                 onPressed: _isComposing
-                    ? () => _handleSubmitted(_textController.text, widget.name)
+                    ? () => _handleSubmitted(
+                        _textController.text, widget.name, DateTime.now())
                     : null,
               ),
             )
@@ -487,29 +569,18 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  void _handleSubmitted(String text, String name) {
+  void _handleSubmitted(String text, String name, DateTime date) {
+    FirebaseFirestore.instance.collection('messages').add({
+      'textMessage': text,
+      'receiver': name,
+      'dataMessage': date.toString(),
+      'sender': widget.user
+    });
     _textController.clear();
     setState(() {
       _isComposing = false;
     });
-    var message = ChatMessage(
-        name: name,
-        text: text,
-        animationController: AnimationController(
-          duration: const Duration(microseconds: 700),
-          vsync: this,
-        ));
-    setState(() {
-      _messages.insert(0, message);
-    });
-    _focusNode.requestFocus();
-    message.animationController.forward();
-  }
 
-  void disponse() {
-    for (var message in _messages) {
-      message.animationController.dispose();
-    }
-    super.dispose();
+    _focusNode.requestFocus();
   }
 }
