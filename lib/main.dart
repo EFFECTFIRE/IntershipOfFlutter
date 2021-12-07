@@ -1,6 +1,7 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'themes.dart';
@@ -459,7 +460,13 @@ class ChatMessage extends StatelessWidget {
                 Text(name, style: Theme.of(context).textTheme.headline4),
                 Container(
                   margin: const EdgeInsets.only(top: 5.0),
-                  child: Text(text, maxLines: null),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: Text(text, maxLines: null)),
+                      Text(date)
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -497,11 +504,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 stream: FirebaseFirestore.instance
                     .collection('messages')
                     .where("receiver", isEqualTo: widget.name)
+                    .where("sender", isEqualTo: widget.user)
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) return Text(S.of(context).none);
                   return ListView.builder(
-                    reverse: true,
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, index) {
                       return Container(
@@ -558,8 +565,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 icon: const Icon(Icons.send),
                 color: Theme.of(context).primaryColor,
                 onPressed: _isComposing
-                    ? () => _handleSubmitted(
-                        _textController.text, widget.name, DateTime.now())
+                    ? () => _handleSubmitted(_textController.text, widget.name,
+                        DateFormat("MM-dd HH:mm").format(DateTime.now()))
                     : null,
               ),
             )
@@ -569,7 +576,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  void _handleSubmitted(String text, String name, DateTime date) {
+  void _handleSubmitted(String text, String name, String date) {
     FirebaseFirestore.instance.collection('messages').add({
       'textMessage': text,
       'receiver': name,
